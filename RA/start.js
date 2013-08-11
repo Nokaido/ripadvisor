@@ -28,10 +28,14 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 		{
 			url = newUrl;
 			siteCount--;
+			console.log("done!");
+		}
+		else
+		{
 			console.log("siteError!");
 		}
 		
-		//return scrape();
+		
 	};
 	
 	scrape = function()

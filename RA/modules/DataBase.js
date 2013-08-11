@@ -111,7 +111,7 @@ exports.insert = function(table, values)
 				break;
 				
 			case "rating":
-				connection.query("INSERT INTO rating SET rt_r_ID = " + values[0] + ", SET rt_user = " + values[1] + ", SET rt_title = " + values[2] + ", SET rt_text = " + values[3] + ", SET rt_pricingRating = " + values[4] + ", SET rt_serviceRating = " + values[5] + ", SET rt_ambienteRating = " + values[6] + ", SET rt_foodRating rt_date = " + values[7], function(err, result)
+				connection.query("INSERT INTO rating SET rt_r_ID = '" + values[0] + "', SET rt_user = '" + values[1] + "', SET rt_title = '" + values[2] + "', SET rt_text = '" + values[3] + "', SET rt_pricingRating = '" + values[4] + "', SET rt_serviceRating = '" + values[5] + "', SET rt_ambienteRating = '" + values[6] + "', SET rt_foodRating rt_date = '" + values[7] + "'", function(err, result)
 				{
 					if(err) throw err;
 					this.id = result.insertId;
@@ -119,7 +119,7 @@ exports.insert = function(table, values)
 				break;
 				
 			case "location":
-			connection.query("INSERT INTO location SET l_locationString = " + values[0], function(err, result)
+			connection.query("INSERT INTO location SET l_locationString = '" + values[0] + "'", function(err, result)
 				{
 					if(err) throw err;
 					this.id = result.insertId;
@@ -129,7 +129,7 @@ exports.insert = function(table, values)
 			case "rawResults":
 				for(var xitem in values)
 				{
-					connection.query("INSERT INTO rawResults SET res_adress = " + values[xitem], function(err, result)
+					connection.query("INSERT INTO rawResults SET res_adress = '" + values[xitem] + "'", function(err, result)
 							{
 								if(err) throw err;
 								this.id = result.insertId;
