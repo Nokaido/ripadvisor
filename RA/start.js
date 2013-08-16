@@ -13,14 +13,14 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 	first = true;
 	var url = "http://www.tripadvisor.com/RestaurantSearch?geo=32655&q=" + locations[0] + "=&pid=";
 	
-	step = function(newUrl, status, dbinput, ph, siteCount)
+	step = function(newUrl, status, dbinput, ph, siteCount, site)
 	{
 		if(status === "success")
 		{
 			info = DB.insert("rawResults", dbinput);
 		}
 		
-		callbackInfo(status, url, info);
+		callbackInfo(status, url, info, site);
 		
 		if(status === "success")
 		{
@@ -45,7 +45,7 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 	
 	nextPage = function(ph, siteCount, first)
 	{
-		if(first || siteCount > 0)
+		if(first || siteCount > 1)
 		{
 		
 		
@@ -75,16 +75,17 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 									var res = new Array();
 									var newUrl = new Array();
 									var count = new Array();
+									var site = $('.paging.pageDisplay').text();
 										
 									$('.paging.taLnk').each(function(){count.push($(this).text());});
 									if(count.length > 1)
 									{
-											count = count[count.length -1];
+										count = count[count.length -1];
 									}
 									
 									$('.paging.taLnk').each(function(){newUrl.push($(this).attr('href'));});
 									
-									if(newUrl.length > 3 || count === $('.paging.pageDisplay').text())
+									if(newUrl.length > 3 || count === site)
 									{
 										newUrl = "http://www.tripadvisor.com" + newUrl[2];
 									}
@@ -106,6 +107,7 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 									res.push(newUrl);
 									res.push(count);
 									res.push(adr);
+									res.push(site);
 									
 									
 									return res;
@@ -119,7 +121,7 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 										}
 										
 										page.close();
-										return step(result[0], status, result[2], ph, siteCount);
+										return step(result[0], status, result[2], ph, siteCount, result[3]);
 										});
 								}, 5000);
 
@@ -131,19 +133,19 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 		{
 			return callbackEnd(ph);
 		}
-	}
+	};
 
 
 	return scrape();
 };
 
-webScraper(phantom, locations, (function(status, url, dbinfo)
+webScraper(phantom, locations, (function(status, url, dbinfo, site)
 		{
 			/* callbackInfo */
     		if (status !== "success") {
-    			return console.log("Unable to connect to '" + url + "'");
+    			return console.log("Unable to connect to '" + url + "' at page: " + site);
     		} else {
-    			return console.log("Page loadet and scraped: '" + url + " DB: " + dbinfo);
+    			return console.log("Page " + site + " loadet and scraped: '" + url + " DB: " + dbinfo);
     		}
 		}), (function(ph)
 				{
@@ -175,25 +177,3 @@ function stringManipulator(locations) {
 
 
 
-// page.render('test.png');
-// var phantom = require('phantom');
-// phantom.create(function(phantomjs)
-// {
-// return phantomjs.createPage(function(page)
-// {
-// return page.open("http://www.google.de", function(status)
-// {
-// console.log("opened google? ", status);
-// return page.evaluate(function()
-// {
-// return document.title;
-// },
-// function(result)
-// {
-// console.log("page title is " + result);
-// return phantomjs.exit();
-// });
-// });
-// });
-// });
-// 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'

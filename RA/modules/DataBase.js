@@ -8,6 +8,8 @@ var DBpassword = conData.password;
 var DBdatabase = conData.database;
 var id = -1;
 
+var getFirstRawResult;
+
 exports.conData = conData;
 
 
@@ -33,7 +35,7 @@ exports.startDB = function()
 				console.log("Database: ");
 				console.log(result);
 			});
-		connection.query("CREATE TABLE restaurant (r_ID INT NOT NULL AUTO_INCREMENT, r_name VARCHAR (100) NOT NULL, r_adress VARCHAR (100) NOT NULL, r_ratingCount INT DEFAULT 0, r_foodType VARCHAR(100), r_averageRating INT DEFAULT -1, r_occasionType VARCHAR(100), r_foodRating INT DEFAULT -1, r_serviceRating INT DEFAULT -1, r_valueRating INT DEFAULT -1, r_atmosphereRating INT DEFAULT -1, r_excellentRatingCount INT DEFAULT 0, r_verygoodRatingCount INT DEFAULT 0, r_averageRatingCount INT DEFAULT 0, r_poorRatingCount INT DEFAULT 0, r_gpsLatitude VARCHAR(20) DEFAULT null, r_gpsLongitude VARCHAR(20) DEFAULT null,  PRIMARY KEY (r_ID, r_adress))", function(err, result)
+		connection.query("CREATE TABLE restaurant (r_ID INT NOT NULL AUTO_INCREMENT, r_name VARCHAR (100) NOT NULL, r_adress VARCHAR (100) NOT NULL, r_ratingCount INT DEFAULT 0, r_foodType VARCHAR(100), r_averageRating DOUBLE DEFAULT -1, r_occasionType VARCHAR(100), r_foodRating INT DEFAULT -1, r_serviceRating INT DEFAULT -1, r_valueRating INT DEFAULT -1, r_atmosphereRating INT DEFAULT -1, r_excellentRatingCount INT DEFAULT 0, r_verygoodRatingCount INT DEFAULT 0, r_averageRatingCount INT DEFAULT 0, r_poorRatingCount INT DEFAULT 0, r_gpsLatitude VARCHAR(20) DEFAULT null, r_gpsLongitude VARCHAR(20) DEFAULT null,  PRIMARY KEY (r_ID, r_adress))", function(err, result)
 			{
 				if(err) throw err;
 				console.log("restaurant: ");
@@ -45,7 +47,7 @@ exports.startDB = function()
 				console.log("user: ");
 				console.log(result);
 			});
-		connection.query("CREATE TABLE rating (rt_ID INT NOT NULL AUTO_INCREMENT, rt_r_ID INT NOT NULL REFERENCES restaurant(r_ID) ON DELETE CASCADE, rt_user VARCHAR(30) NOT NULL REFERENCES user(u_user) ON DELETE CASCADE, rt_title VARCHAR(100) NOT NULL, rt_text VARCHAR(1000) NOT NULL, rt_pricingRating INT DEFAULT -1, rt_serviceRating INT DEFAULT -1, rt_ambienteRating INT DEFAULT -1, rt_foodRating INT DEFAULT -1, rt_date VARCHAR(30) NOT NULL, PRIMARY KEY(rt_ID))", function(err, result)
+		connection.query("CREATE TABLE rating (rt_ID INT NOT NULL AUTO_INCREMENT, rt_r_ID INT NOT NULL REFERENCES restaurant(r_ID) ON DELETE CASCADE, rt_user VARCHAR(30) NOT NULL REFERENCES user(u_user) ON DELETE CASCADE, rt_title VARCHAR(100) NOT NULL, rt_text VARCHAR(1000) NOT NULL, rt_averageRating INT DEFAULT -1, rt_pricingRating INT DEFAULT -1, rt_ambienteRating INT DEFAULT -1, rt_serviceRating INT DEFAULT -1, rt_foodRating INT DEFAULT -1, rt_date VARCHAR(30) NOT NULL, PRIMARY KEY(rt_ID))", function(err, result)
 			{
 				if(err) throw err;
 				console.log("rating: ");
@@ -57,7 +59,7 @@ exports.startDB = function()
 				console.log("location: ");
 				console.log(result);
 			});
-		connection.query("CREATE TABLE rawResults (res_ID INT NOT NULL AUTO_INCREMENT, res_adress VARCHAR(100) NOT NULL, PRIMARY KEY(res_ID))", function(err, result)
+		connection.query("CREATE TABLE rawResults (res_ID INT NOT NULL AUTO_INCREMENT, res_adress VARCHAR(300) NOT NULL, PRIMARY KEY(res_ID))", function(err, result)
 			{
 				if(err) throw err;
 				console.log("rawResults: ");
@@ -80,6 +82,7 @@ exports.destroyDB = function(connection)
 exports.insert = function(table, values)
 	{
 		var connection = this.connect();
+		var id;
 		
 		for(var item in values)
 		{
@@ -95,26 +98,26 @@ exports.insert = function(table, values)
 		switch(table)
 		{
 			case "restaurant":
-				connection.query("INSERT INTO restaurant SET r_name = " + values[0] + ", r_adress = " + values[1] + ", r_ratingCount = " + values[2] + ", r_foodType = " + values[3] + ", r_averageRating = " + values[4] + ", r_occasionType = " + values[5] + ", r_foodRating = " + values[6] + ", r_serviceRating = " + values[7] + ", r_valueRating = " + values[8] + ", r_atmosphereRating = " + values[9] + ", r_excellentRatingCount = " + values[10] + ", r_verygoodRatingCount = " + values[11] + ", r_averageRatingCount = " + values[12] + ", r_poorRatingCount = " + values[13] + ", r_gpsLatitude = " + values[14] + ", r_gpsLongitude = " + values[15], function(err, result)
+				connection.query("INSERT INTO restaurant SET r_name = '" + values[0] + "', r_adress = '" + values[1] + "', r_ratingCount = '" + values[2] + "', r_foodType = '" + values[3] + "', r_averageRating = '" + values[4] + "', r_occasionType = '" + values[5] + "', r_foodRating = '" + values[6] + "', r_serviceRating = '" + values[7] + "', r_valueRating = '" + values[8] + "', r_atmosphereRating = '" + values[9] + "', r_excellentRatingCount = '" + values[10] + "', r_verygoodRatingCount = '" + values[11] + "', r_averageRatingCount = '" + values[12] + "', r_poorRatingCount = '" + values[13] + "', r_gpsLatitude = '" + values[14] + "', r_gpsLongitude = '" + values[15] + "'", function(err, result)
 				{
 					if(err) throw err;
-					this.id = result.insertId;
+					id = result.insertId;
 				});
 				break;
 				
 			case "user":
-				connection.query("INSERT INTO user SET u_user = " + values[0] + ", SET u_ratingCount = " + values[1] + ", SET u_excellentRatingCount = " + values[2] + ", SET u_verygoodRatingCount = " + values[3] + ", SET u_verygoodRatingCount = " + values[4] + ", SET u_averageRatingCount = " + values[5] + ", SET u_poorRatingCount = " + values[6] + ", SET u_helpfullRatingCount = " + values[7], function(err, result)
+				connection.query("INSERT INTO user SET u_user = '" + values[0] + "', SET u_ratingCount = '" + values[1] + "', SET u_excellentRatingCount = '" + values[2] + "', SET u_verygoodRatingCount = '" + values[3] + "', SET u_verygoodRatingCount = '" + values[4] + "', SET u_averageRatingCount = '" + values[5] + "', SET u_poorRatingCount = '" + values[6] + "', SET u_helpfullRatingCount = '" + values[7] + "'", function(err, result)
 				{
 					if(err) throw err;
-					this.id = result.insertId;
+					id = result.insertId;
 				});
 				break;
 				
 			case "rating":
-				connection.query("INSERT INTO rating SET rt_r_ID = '" + values[0] + "', SET rt_user = '" + values[1] + "', SET rt_title = '" + values[2] + "', SET rt_text = '" + values[3] + "', SET rt_pricingRating = '" + values[4] + "', SET rt_serviceRating = '" + values[5] + "', SET rt_ambienteRating = '" + values[6] + "', SET rt_foodRating rt_date = '" + values[7] + "'", function(err, result)
+				connection.query("INSERT INTO rating SET rt_r_ID = '" + values[0] + "', SET rt_user = '" + values[1] + "', SET rt_title = '" + values[2] + "', SET rt_text = '" + values[3] + "', SET rt_averageRating = '" + values[4] + "', SET rt_pricingRating = '" + values[5] + "', SET rt_ambienteRating = '" + values[6] + "', SET rt_serviceRating = '" + values[7] + "', SET rt_foodRating rt_date = '" + values[8] + "'", function(err, result)
 				{
 					if(err) throw err;
-					this.id = result.insertId;
+					id = result.insertId;
 				});
 				break;
 				
@@ -122,17 +125,17 @@ exports.insert = function(table, values)
 			connection.query("INSERT INTO location SET l_locationString = '" + values[0] + "'", function(err, result)
 				{
 					if(err) throw err;
-					this.id = result.insertId;
+					id = result.insertId;
 				});
 				break;
 				
 			case "rawResults":
 				for(var xitem in values)
 				{
-					connection.query("INSERT INTO rawResults SET res_adress = '" + values[xitem] + "'", function(err, result)
+					connection.query("INSERT INTO rawresults SET res_adress = '" + values[xitem] + "'", function(err, result)
 							{
 								if(err) throw err;
-								this.id = result.insertId;
+								id = result.insertId;
 							});
 				}
 				break;
@@ -142,8 +145,33 @@ exports.insert = function(table, values)
 		}
 		
 		connection.end();
-		return this.id;
+		return id;
 	};
+	
+exports.getFirstRawResult = function(res)
+{
+	var connection = this.connect();
+	var query = connection.query("SELECT res_adress FROM rawresults WHERE res_ID = (SELECT MIN(res_ID) FROM rawresults)", function(err, row)
+			{
+				//console.log(row);
+				return res(null, row);
+			});/* */
+		console.log(2);
+};
+
+
+exports.deleteFirstRawResult = function()
+{
+	var connection = this.connect();
+	connection.query("DELETE rr FROM rawresults AS rr WHERE rr.res_ID = MIN(res_ID)", function(err, result)
+		{
+			if(err) throw err;
+			id  = result;
+		});
+	
+	connection.end();
+	return id;
+};
 	
 
 
