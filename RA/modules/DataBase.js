@@ -148,15 +148,14 @@ exports.insert = function(table, values)
 		return id;
 	};
 	
-exports.getFirstRawResult = function(res)
+exports.getFirstRawResult = function(ph, Data, res)
 {
 	var connection = this.connect();
 	var query = connection.query("SELECT res_adress FROM rawresults WHERE res_ID = (SELECT MIN(res_ID) FROM rawresults)", function(err, row)
 			{
-				//console.log(row);
-				return res(null, row);
+				Data.url = row[0].res_adress;
+				return res(ph, Data);
 			});/* */
-		console.log(2);
 };
 
 

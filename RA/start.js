@@ -61,9 +61,10 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 						// jQuery Loaded.
 						// Wait for a bit for AJAX content to load on the page.
 						// Here, we are waiting 5 seconds.
-						setTimeout(function() 
+						
+						
+							setTimeout(function() 
 								{
-								
 								return page.evaluate(function() 
 									{
 									// Get what you want from the page using jQuery. A

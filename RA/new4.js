@@ -58,6 +58,10 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 				
 				page.injectJs('./jquery-1.10.2.js', function() 
 						{
+							page.evaluate(function()
+								{
+									$('.moreLink').click();
+								});
 						// jQuery Loaded.
 						// Wait for a bit for AJAX content to load on the page.
 						// Here, we are waiting 5 seconds.
@@ -111,7 +115,7 @@ webScraper = function(phantom, locations, callbackInfo, callbackEnd)
 											siteCount = result[1];
 											first = false;
 										}
-										
+										page.render('thath.png');
 										page.close();
 										return step(result[0], status, result[2], ph, siteCount);
 										});
