@@ -6,6 +6,7 @@ page.open('http://www.tripadvisor.com/Restaurant_Review-g32655-d2439499-Reviews-
 	{
     console.log(status);
     page.injectJs('./jquery-1.10.2.js');
+    console.log(page.content);
     	page.evaluate(function()
     				{
     					$('.moreLink').click();
