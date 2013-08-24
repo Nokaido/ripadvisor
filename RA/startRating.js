@@ -1,8 +1,9 @@
 var DB = require('./modules/DataBase');
 var phantom = require('phantom');
-var ratingFarmer, ratingStep, nextRating, phantomInit, site, dataGetter;
+var ratingFarmer, ratingStep, nextRating, phantomInit, site, dataGetter, clickMore;
 var first = true;
 Data = new Object();
+var check = null;
 
 console.log("Start");
 
@@ -10,14 +11,20 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 {
 	phantomInit = function()
 	{
-		phantom.create(function(ph)
+		phantom.create('--load-images=no', function(ph)
 			{
 				var temp;
-				var tempUrl = new Array;
+				var tempUrl = new Array();
 				tempUrl.push("success");
 				tempUrl.push(0);
 				tempUrl.push(0);
-				
+				ph.addCookie(
+					{
+						'name':     '__utmc',
+						'value':    '63761258',
+						'domain':   'tripadvisor.com',
+						'secure':   false
+					});
 				
 				Data.status = "success";
 				Data.url = "next";
@@ -32,14 +39,6 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 			});
 	
 	};
-	
-	dataGetter = function(ph, result)
-	{
-		
-	
-
-		return ratingStep(ph, result)
-	}
 	
 	ratingStep = function(ph, result)
 	{
@@ -67,52 +66,86 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 		{
 			ph.createPage(function(page)
 				{
-					return page.open(Data.url /* url */, function(status)
+					return page.open(Data.url, function(status)
 						{
 						console.log("opened site : " + Data.url + " " + status);
-
+						page.onLoadFinished = function()
+						{
+							console.log('ready!');
+						};
 							page.injectJs('./jquery-1.10.2.js', function()
 								{
-									page.evaluate(function()
+									
+								
+								page.evaluate(function()
+										{
+											$('.content>a').trigger('click');
+										}, function()
+										{
+											return page.render('0pic.png', function()
+												{
+													console.log('render 0 done');
+												});
+										});
+								console.log(page);
+										
+								setTimeout(function()
 									{
-										$('.moreLink').click();
-									});
+										page.evaluate(function()
+											{
+												//$('.moreLink:first').click();
+												return $('HTML');
+											}, function(res)
+											{
+											console.log('hallo' + res + ' hallo');	
+											return page.render('1pic.png', function()
+													{
+														console.log('render 1 done');
+													})
+											});
+									},20000);
+								
+										
+										
+
+								
+
+
+
+
+
+
+								setTimeout(function()
+										{
+											console.log('click 1');
+											page.render('step0.png');
+											page.evaluate(function()
+												{
+													$('.content>a').trigger('click');
+												},function()
+												{
+													//page.sendEvent('click', koord.left + 1, koord.top + 1);
+													page.render('step1.png');
+													setTimeout(function()
+														{
+															
+															page.evaluate(function()
+															{
+																$('.moreLink:first').click();
+															}, function()
+															{
+																page.render('step2.png');
+																console.log('click 2');
+															});
+														}, 50000);
+												});
+											
+											page.render('step3.png');
+										}, 50000);
 									
-//									page.evaluate(function()
-//												{
-//													$('.submitOnClick[value = "false"]:first').focus();
-//												}, function()
-//												{
-//													page.sendEvent('keypress', 'Enter', null, null);
-//													setTimeout(function()
-//														{
-//															page.render("test1.png");
-//															page.close();
-//														}, 5000);
-//												});
-									
+
 									setTimeout(function()
 										{
-//											return page.evaluate(function()
-//												{
-//												//ta.call('ta.servlet.Reviews.expandReviews',event,this,'review_172434118', '1', 4444)
-//												$('.moreLink:first').trigger('click');
-//												//$('.submitOnClick[value = "false"]:first').click();
-//
-//												}, function()
-//												{
-//													//page.sendEvent('keypress', 'Space', null, null)
-//													setTimeout(function()
-//														{
-//															page.render("test1.png");
-//															console.log("done!");
-//															page.close();
-//															return;
-//														}, 5000);
-//												});
-											
-
-											
 											return page.evaluate(function()
 												{
 													var result = new Array(); /* 0:status 1:url 2:siteCount/control(end) 3:activSite */
@@ -205,7 +238,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 													//page.sendEvent('click', offset.left + 1, offset.top + 1);
 													
 													
-													page.render('rand1.png');
+													page.render('step4.png');
 													console.log('done!');
 													page.close();
 													
@@ -215,7 +248,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 													}
 													//return ratingStep(ph, result);
 												});
-										}, 5000);
+										}, 200000);
 								});
 						});
 				});
@@ -244,4 +277,33 @@ ratingFarmer((function(Data, db)
 			return ph.exit();
 		}));
 
+//											return page.evaluate(function()
+//												{
+//												//ta.call('ta.servlet.Reviews.expandReviews',event,this,'review_172434118', '1', 4444)
+//												$('.moreLink:first').trigger('click');
+//												//$('.submitOnClick[value = "false"]:first').click();
+//
+//												}, function()
+//												{
+//													//page.sendEvent('keypress', 'Space', null, null)
+//													setTimeout(function()
+//														{
+//															page.render("test1.png");
+//															console.log("done!");
+//															page.close();
+//															return;
+//														}, 5000);
+//												});
 
+//									page.evaluate(function()
+//												{
+//													$('.submitOnClick[value = "false"]:first').click();
+//												}, function()
+//												{
+//													page.sendEvent('keypress', 'Enter', null, null);
+//													setTimeout(function()
+//														{
+//															page.render("test1.png");
+//															page.close();
+//														}, 5000);
+//												});
