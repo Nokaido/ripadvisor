@@ -7,6 +7,7 @@
  var next = false;
  var restaurantID;
 
+
  
 log = function(message, color)
 {
@@ -47,10 +48,15 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 
 	saveRating = function(ph, result)
 	{
-		if(result === 'success')
+		//log(result);
+		//log(result.user[0].title);
+		if(result.status === 'success')
 		{
-			return DB.saveRating(result, function(id)
+
+			return DB.startSave(result, function(id)
 			{
+				log("Restaurant ID: " + id);
+				log('DB callback');
 				restaurantID = id;
 				result.restaurantID = id;
 				return ratingStep(ph, result);
@@ -65,12 +71,12 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 
 	ratingStep = function(ph, result)
 			{
-				//TODO set next when site == count
-				callbackInfo(result, DB);
+				callbackInfo(result);
 				
 				if(result.status === 'success' && !result.err)
 				{
-					setTimeout(function()
+					log("next Step");
+					return setTimeout(function()
 						{
 						if(result.url === 'next')
 							{
@@ -79,8 +85,8 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 									{
 									if(res.affectedRows === 0)
 									{
-										Data.url = 'end';
-										return nextRating(ph, Data);
+										result.url = 'end';
+										return nextRating(ph, result);
 									}
 									else
 									{
@@ -91,14 +97,17 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 									}
 								});
 							}
+							else
+							{
+								return nextRating(ph, result);
+							}
 						},2000);
 				}
 				else
 				{
 					log("site Error!");
+					return nextRating(ph, result);
 				}
-
-				return nextRating(ph, result);
 			};
 
 	nextRating = function(ph, Data)
@@ -146,12 +155,13 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 												page.evaluate(function()
 														{
 														$('.moreLink:first').click();
-														return;
+														var temp = 'second click'
+														return temp;
 														}, function(err, result)
 														{
-
+															log(result);
 														});
-													},1000);
+													},2000);
 
 											setTimeout(function()
 											{
@@ -163,22 +173,19 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 											page.evaluate(function()
 													{
 													var cc = new Object();
-													var result = new Object();
+													var result = new Array();
 													cc.restaurant = new Array();
 													cc.user = new Array();
 													cc.idArray = new Array();
-													cc.site =  $('.paging.pageDisplay').text();
-													cc.count = 0;
-
+												 	cc.site =  $('.paging.pageDisplay').text();
+													cc.count = '0';
+													
  													var temp = new Array();
-													//var result =  /* 0:status 1:url 2:siteCount/control(end) 3:activSite */
-													//var newUrl = new Array();
-													//var restaurant = new Array();
-													//var user = new Array();
-													//var idArray = new Array();
-													//var site = $('.paging.pageDisplay').text();
-													//var count = new Array();
-
+ 													
+ 													if(cc.site === '')
+ 													{
+ 														cc.site = 1;
+ 													}
 													
  													$('.paging.taLnk').each(function(){temp.push($(this).text());});
  													if(temp.length > 0)
@@ -187,7 +194,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													}
  													else
  													{
- 														cc.count = 1;
+ 														cc.count = ''+1;
  													}
  													temp = new Array();
  													
@@ -211,7 +218,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  														cc.restaurant.push(($('.more').text()).slice(0, ($('.more').text()).length - 8));//RatingCount
  														cc.restaurant.push(($('.detail:first').text()).slice(11, ($('.detail:first').text()).length - 1));//FoodType
  														cc.restaurant.push(($('.sprite-ratings').attr('alt')).slice(0, ($('.sprite-ratings').attr('alt')).length - 11));//AverageRating
- 														cc.restaurant.push(($('.detail:eq(1)').text()).slice(17, ($('.detail:eq(1)').text()).length - 2));//OccationType
+ 														cc.restaurant.push(($('.detail:eq(1)').text()).slice(17, ($('.detail:eq(1)').text()).length - 1));//OccationType
  														cc.restaurant.push(($('.fill:eq(5)').attr('style')).slice(6, ($('.fill:eq(5)').attr('style')).length - 3));//FoodRating
  														cc.restaurant.push(($('.fill:eq(6)').attr('style')).slice(6, ($('.fill:eq(6)').attr('style')).length - 3));//ServiceRating
  														cc.restaurant.push(($('.fill:eq(7)').attr('style')).slice(6, ($('.fill:eq(7)').attr('style')).length - 3));//ValueRating
@@ -252,7 +259,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													}
  													 
  													$('.reviewSelector').each(function(){cc.idArray.push($(this).attr('id'));});
- 													/* */
+ 													
  													var temp;
  													
  													for(var i = 0; i < cc.idArray.length; i++)
@@ -260,15 +267,18 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  														temp = '#'+ cc.idArray[i];
  														var tempObject = new Object();
  														// Username
- 														tempObject.name = (($(temp).find('.mo span:eq(1)').text()));
- 														// Title
- 														tempObject.title = (($(temp).find('.quote>a:eq(1)').text()).slice(1, ($(temp).find('.quote>a:eq(1)').text()).length - 1));
- 														// Text
- 														tempObject.text = (($(temp).find('.entry>p:eq(1)').text()).slice(1, ($(temp).find('.entry>p:eq(1)').text()).length - 1));
+
  														// Ratings
  														
  														if(($(temp).find('.sprite-ratings')).length > 1)
  														{
+ 															tempObject.name = (($(temp).find('.mo span:eq(1)').text()));
+ 															// Title
+ 															tempObject.title = (($(temp).find('.quote>a:eq(1)').text()).slice(1, ($(temp).find('.quote>a:eq(1)').text()).length - 1));
+ 															// Text
+ 															tempObject.text = (($(temp).find('.entry>p:eq(1)').text()).slice(1, ($(temp).find('.entry>p:eq(1)').text()).length - 1));
+ 															
+ 															tempObject.date = ($(temp).find('.ratingDate>span').text() === "NEW") ? (($(temp).find('.ratingDate').text()).slice(9, ($(temp).find('.ratingDate').text()).length - 5)) : (($(temp).find('.ratingDate:first').text()).slice(9, ($(temp).find('.ratingDate:first').text()).length - 1));
  															var tempArray = new Array();
  															$(temp).find('.sprite-ratings').each(function(){tempArray.push($(this).attr('alt'));});
  															
@@ -279,7 +289,19 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  															tempObject.food = tempArray[5].slice(0, 1);
  														}else
  														{
- 															tempObject.average = "-1";
+ 															
+ 															
+ 															tempObject.name = (($(temp).find('.mo span').text()));
+ 															// Title
+ 															tempObject.title = (($(temp).find('.quote>a').text()).slice(1, ($(temp).find('.quote>a').text()).length - 1));
+ 															// Text
+ 															tempObject.text = (($(temp).find('.entry>p').text()).slice(1, ($(temp).find('.entry>p').text()).length - 1));
+ 															
+ 															tempObject.date = ($(temp).find('.ratingDate>span').text() === "NEW") ? (($(temp).find('.ratingDate').text()).slice(9, ($(temp).find('.ratingDate').text()).length - 5)) : (($(temp).find('.ratingDate:first').text()).slice(9, ($(temp).find('.ratingDate:first').text()).length - 1));
+
+ 															var tempArray = new Array();
+ 															$(temp).find('.sprite-ratings').each(function(){tempArray.push($(this).attr('alt'));});
+ 															tempObject.average = tempArray[0].slice(0, 1);
  															tempObject.price = "-1";
  															tempObject.ambience = "-1";
  															tempObject.service = "-1";
@@ -288,21 +310,26 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  														cc.user.push(tempObject);
  													}
  													
- 													result.url = cc.newUrl;
- 													result.count = cc.count;
- 													result.site = cc.site;
- 													result.restaurant = cc.restaurant;
- 													result.user = cc.user;
+ 													result.push(cc.newUrl);
+ 													result.push(cc.count);
+ 													result.push(cc.site);
+ 													result.push(cc.restaurant);
+ 													result.push(cc.user);/* */
 
- 													return result;
+ 													return cc;
  												}, function(err, result)
  												{
  													page.render('2pic.png', function()
  														{
- 															log('render 2 done')
+ 															return log('render 2 done')
  														});
+ 													
  													log(err);
+// 													log('result');
+// 													log(result);
+// 													log('result');
  													page.close();
+ 													
  													if(status === 'success' && !err)
  													{
  														log('Site ' + result.site + ' of ' + result.count + ' of this page scraped!');
@@ -311,17 +338,22 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													{
  														log('Scraping failed try again...');
  													}
+ 													Data = new Object();
+ 													Data.status = status;
+ 													Data.err = err;
+ 													Data.restaurantID = restaurantID;
+ 													Data.url = result.newUrl;
+ 													Data.count = result.count;
+ 													Data.site = result.site;
+ 													Data.restaurant = result.restaurant;
+ 													Data.user = result.user;
+ 													//log(Data);
  													
- 													result.status = status;
- 													result.err = err;
- 													result.restaurantID = restaurantID;
-
- 													return saveRating(ph, result);
- 													//return ratingStep(ph, result);
+ 													return saveRating(ph, Data);
  												});
- 										}, 4000);
+ 										}, 6000);
  								});
-							}, 8000);
+							}, 10000);
  						});
  				});
  		}
@@ -339,11 +371,14 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  		{
  			if (Data.status !== "success")
  			{
- 				return log("Unable to connect to '" + Data.url + "' at page: " + Data.activeSite);
+ 				log(Data);
+ 				return log("Unable to connect to '" + Data.url + "' at page: " + Data.site);
  			} else 
  			{
- 				return log("Page " + Data.siteCount + " loadet and scraped: '" + Data.url + " DB: " + db);
+ 				log(Data);
+ 				return log("Page " + Data.site + " of " + Data.count + " loadet, scraped and put into Database: '" + Data.url);
  			}
+ 			
  		}), (function(ph)
  		{
  			log('Exit Phantom');

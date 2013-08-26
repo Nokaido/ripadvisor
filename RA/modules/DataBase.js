@@ -7,7 +7,7 @@ var DBuser = conData.user;
 var DBpassword = conData.password;
 var DBdatabase = conData.database;
 var id = -1;
-
+var nextUser;
 var getFirstRawResult;
 
 exports.conData = conData;
@@ -35,7 +35,7 @@ exports.startDB = function()
 				console.log("Database: ");
 				console.log(result);
 			});
-		connection.query("CREATE TABLE restaurant (r_ID INT NOT NULL AUTO_INCREMENT, r_name VARCHAR (100) NOT NULL, r_adress VARCHAR (100) NOT NULL, r_ratingCount INT DEFAULT 0, r_foodType VARCHAR(100), r_averageRating DOUBLE DEFAULT -1, r_occasionType VARCHAR(100), r_foodRating INT DEFAULT -1, r_serviceRating INT DEFAULT -1, r_valueRating INT DEFAULT -1, r_atmosphereRating INT DEFAULT -1, r_excellentRatingCount INT DEFAULT 0, r_verygoodRatingCount INT DEFAULT 0, r_averageRatingCount INT DEFAULT 0, r_poorRatingCount INT DEFAULT 0, r_trribleRatingCount INT DEFAULT 0, r_gpsLatitude VARCHAR(20) DEFAULT null, r_gpsLongitude VARCHAR(20) DEFAULT null,  PRIMARY KEY (r_ID, r_adress))", function(err, result)
+		connection.query("CREATE TABLE restaurant (r_ID INT NOT NULL AUTO_INCREMENT, r_name VARCHAR (100) NOT NULL, r_adress VARCHAR (100) NOT NULL, r_ratingCount INT DEFAULT 0, r_foodType VARCHAR(100), r_averageRating DOUBLE DEFAULT -1, r_occasionType VARCHAR(100), r_foodRating INT DEFAULT -1, r_serviceRating INT DEFAULT -1, r_valueRating INT DEFAULT -1, r_atmosphereRating INT DEFAULT -1, r_excellentRatingCount INT DEFAULT 0, r_verygoodRatingCount INT DEFAULT 0, r_averageRatingCount INT DEFAULT 0, r_poorRatingCount INT DEFAULT 0, r_terribleRatingCount INT DEFAULT 0, r_gpsLatitude VARCHAR(20) DEFAULT null, r_gpsLongitude VARCHAR(20) DEFAULT null,  PRIMARY KEY (r_ID, r_adress))", function(err, result)
 			{
 				if(err) throw err;
 				console.log("restaurant: ");
@@ -175,74 +175,189 @@ exports.saveRating = function(Data, res)
 {
 	var connection = this.connect();
 	var allResults = new Array();
-	var rid = (res === null) ? null : Data.restaurantID;
-	var uid;
-	var rtid;
-	
-	
+	var idc = new Object();
+	idc.rid = (res === undefined) ? undefined : Data.restaurantID;
+	idc.uid;
+	idc.rtid;
+	var Data = Data;
 
-	if(Data.count === "1")
+	if(Data.site === "1")
 	{
-		var query = connection.query("INSERT INTO restaurant SET r_name = '" + Data.restaurant[0] + "', r_adress = '" + Data.restaurant[1] + "', r_ratingCount = '" + Data.restaurant[2] + "', r_foodType = '" + Data.restaurant[3] + "', r_averageRating = '" + Data.restaurant[4] + "', r_occasionType = '" + Data.restaurant[5] + "', r_foodRating = '" + Data.restaurant[6] + "', r_serviceRating = '" + Data.restaurant[7] + "', r_valueRating = '" + Data.restaurant[8] + "', r_atmosphereRating = '" + Data.restaurant[9] + "', r_excellentRatingCount = '" + Data.restaurant[10] + "', r_verygoodRatingCount = '" + Data.restaurant[11] + "', r_averageRatingCount = '" + Data.restaurant[12] + "', r_poorRatingCount = '" + Data.restaurant[13] + "', r_poorRatingCount = '" + Data.restaurant[14] + "', r_gpsLatitude = '" + Data.restaurant[15] + "', r_gpsLongitude = '" + Data.restaurant[16] + "'", function(err, result)
+		var query = connection.query("INSERT INTO restaurant SET r_name = '" + Data.restaurant[0] + "', r_adress = '" + Data.restaurant[1] + "', r_ratingCount = '" + Data.restaurant[2] + "', r_foodType = '" + Data.restaurant[3] + "', r_averageRating = '" + Data.restaurant[4] + "', r_occasionType = '" + Data.restaurant[5] + "', r_foodRating = '" + Data.restaurant[6] + "', r_serviceRating = '" + Data.restaurant[7] + "', r_valueRating = '" + Data.restaurant[8] + "', r_atmosphereRating = '" + Data.restaurant[9] + "', r_excellentRatingCount = '" + Data.restaurant[10] + "', r_verygoodRatingCount = '" + Data.restaurant[11] + "', r_averageRatingCount = '" + Data.restaurant[12] + "', r_poorRatingCount = '" + Data.restaurant[13] + "', r_terribleRatingCount = '" + Data.restaurant[14] + "', r_gpsLatitude = '" + Data.restaurant[15] + "', r_gpsLongitude = '" + Data.restaurant[16] + "'", function(err, result)
 		{
 			if(err) throw err;
-			rid = result.insertId;
-			allResults.push(result);
+			idc.rid = result.insertId;
+
+			for(var i = 0; i < 2; i++)//Data.user.length
+			{
+					connection.query("SELECT u_user FROM user WHERE u_user = '" + Data.user[i].name + "'", function(err, result)
+					{
+						if(err) throw err;
+						if(result.length < 1)
+						{
+
+							return connection.query("INSERT INTO user SET u_user = '" + Data.user[i].name + "'", function(err, result)
+							{
+								if(err) throw err;
+								uid = Data.user[i].name;
+								var tempstring0 = Data.user[i].text.replace(/\'/g, "\\\'");
+								var tempstring1 = Data.user[i].title.replace(/\'/g, "\\\'");
+								return connection.query("INSERT INTO rating SET rt_r_ID = '" + rid + "', rt_user = '" + uid + "', rt_title = '" + tempstring1 + "', rt_text = '" + tempstring0 + "', rt_averageRating = '" + Data.user[i].average + "', rt_pricingRating = '" + Data.user[i].price + "', rt_ambienteRating = '" + Data.user[i].ambience + "', rt_serviceRating = '" + Data.user[i].service + "', rt_foodRating = '" + Data.user[i].food + "', rt_date = '" + Data.user[i].date + "'", function(err, result)
+									{
+										if(err) throw err;
+										if(i = Data.user.length)
+										{
+											connection.end();
+											return res(idc.rid);
+										}
+									});
+							});
+						}
+						else
+						{
+							var tempstring0 = Data.user[i].text.replace(/\'/g, "\\\'");
+							var tempstring1 = Data.user[i].title.replace(/\'/g, "\\\'");
+							uid = result[0].u_user;
+							return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = '" + uid + "', rt_title = '" + tempstring1 + "', rt_text = '" + tempstring0 + "', rt_averageRating = '" + Data.user[i].average + "', rt_pricingRating = '" + Data.user[i].price + "', rt_ambienteRating = '" + Data.user[i].ambience + "', rt_serviceRating = '" + Data.user[i].service + "', rt_foodRating = '" + Data.user[i].food + "', rt_date = '" + Data.user[i].date + "'", function(err, result)
+								{
+									if(err) throw err;
+									if(i = Data.user.length)
+									{
+										connection.end();
+										return res(idc.rid);
+									}
+								});
+						}
+					});
+					setTimeout(function()
+						{
+							//wait
+						}, 2000);
+			}
+		
 		});
 	}
-	
-	for(var i = 0 ; i < Data.user.length; i++)
+	else
 	{
-		connection.query("SELECT u_user FROM user WHERE u_user = '" + Data.user[i].name + "'", function(err, result)
+		for(var i = 0 ; i < Data.user.length; i++)
+		{
+			connection.query("SELECT u_user FROM user WHERE u_user = '" + Data.user[i].name + "'", function(err, result)
+				{
+					if(err) throw err;
+					if(result.length < 1)
+					{
+						return connection.query("INSERT INTO user SET u_user = '" + Data.user[i].name + "'", function(err, result)
+						{
+							if(err) throw err;
+							uid = Data.user.name;
+							var tempstring0 = Data.user[i].text.replace(/\'/g, "\\\'");
+							var tempstring1 = Data.user[i].title.replace(/\'/g, "\\\'");
+							return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = '" + idc.uid + "', rt_title = '" + tempstring1 + "', rt_text = '" + tempstring0 + "', rt_averageRating = '" + Data.user[i].average + "', rt_pricingRating = '" + Data.user[i].price + "', rt_ambienteRating = '" + Data.user[i].ambience + "', rt_serviceRating = '" + Data.user[i].service + "', rt_foodRating = '" + Data.user[i].food + "', rt_date = '" + Data.user[i].date + "'", function(err, result)
+								{
+									if(err) throw err;
+									if(i = Data.user.length)
+									{
+										connection.end();
+										return res(idc.rid);
+									}
+								});
+						});
+					}
+					else
+					{
+						uid = result[0].u_user;
+						var tempstring0 = Data.user[i].text.replace(/\'/g, "\\\'");
+						var tempstring1 = Data.user[i].title.replace(/\'/g, "\\\'");
+						return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = '" + uid + "', rt_title = '" + tempstring1 + "', rt_text = '" + tempstring0 + "', rt_averageRating = '" + Data.user[i].average + "', rt_pricingRating = '" + Data.user[i].price + "', rt_ambienteRating = '" + Data.user[i].ambience + "', rt_serviceRating = '" + Data.user[i].service + "', rt_foodRating = '" + Data.user[i].food + "', rt_date = '" + Data.user[i].date + "'", function(err, result)
+							{
+								if(err) throw err;
+								if(i = Data.user.length)
+								{
+									connection.end();
+									return res(idc.rid);
+								}
+							});
+					}
+				});
+				setTimeout(function()
+					{
+						//wait
+					}, 2000);
+		}
+	}
+};
+
+exports.startSave = function(Data, res)
+{
+	var connection = this.connect();
+	var allResults = new Array();
+	var idc = new Object();
+	idc.rid = (res === undefined) ? undefined : Data.restaurantID;
+	idc.uid;
+	idc.rtid;
+	var Data = Data;
+	if(Data.site === "1")
+	{
+		return connection.query("INSERT INTO restaurant SET r_name = '" + Data.restaurant[0] + "', r_adress = '" + Data.restaurant[1] + "', r_ratingCount = '" + Data.restaurant[2] + "', r_foodType = '" + Data.restaurant[3] + "', r_averageRating = '" + Data.restaurant[4] + "', r_occasionType = '" + Data.restaurant[5] + "', r_foodRating = '" + Data.restaurant[6] + "', r_serviceRating = '" + Data.restaurant[7] + "', r_valueRating = '" + Data.restaurant[8] + "', r_atmosphereRating = '" + Data.restaurant[9] + "', r_excellentRatingCount = '" + Data.restaurant[10] + "', r_verygoodRatingCount = '" + Data.restaurant[11] + "', r_averageRatingCount = '" + Data.restaurant[12] + "', r_poorRatingCount = '" + Data.restaurant[13] + "', r_terribleRatingCount = '" + Data.restaurant[14] + "', r_gpsLatitude = '" + Data.restaurant[15] + "', r_gpsLongitude = '" + Data.restaurant[16] + "'", function(err, result)
+		{
+			if(err) throw err;
+			idc.rid = result.insertId;
+			nextUser(Data, 0, idc, res, connection);
+		});
+	}else
+	{
+		return nextUser(Data, 0, idc, res, connection);
+	}
+}
+
+
+nextUser = function(input, counter, idc, res, connection)
+{	
+	if(counter !== input.user.length)
+	{
+		return connection.query("SELECT u_user FROM user WHERE u_user = '" + input.user[counter].name + "'", function(err, result)
 			{
 				if(err) throw err;
 				if(result.length < 1)
 				{
-					return connection.query("INSERT INTO user SET u_user = '" + Data.user.name + "'", function(err, result)
+
+					return connection.query("INSERT INTO user SET u_user = '" + input.user[counter].name + "'", function(err, result)
 					{
 						if(err) throw err;
-						uid = Data.user.name;
-						allResults.push(result);
+						idc.uid = input.user[counter].name;
+						var tempstring0 = input.user[counter].text.replace(/\'/g, "\\\'");
+						var tempstring1 = input.user[counter].title.replace(/\'/g, "\\\'");
+						return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = '" + idc.uid + "', rt_title = '" + tempstring1 + "', rt_text = '" + tempstring0 + "', rt_averageRating = '" + input.user[counter].average + "', rt_pricingRating = '" + input.user[counter].price + "', rt_ambienteRating = '" + input.user[counter].ambience + "', rt_serviceRating = '" + input.user[counter].service + "', rt_foodRating = '" + input.user[counter].food + "', rt_date = '" + input.user[counter].date + "'", function(err, result)
+							{
+								if(err) throw err;
+								counter++;
+								return nextUser(input, counter, idc, res, connection);
+							});
 					});
 				}
 				else
 				{
-					uid = result[0].u_user;
-					allResults.push(result);
-					return;
+					var tempstring0 = input.user[counter].text.replace(/\'/g, "\\\'");
+					var tempstring1 = input.user[counter].title.replace(/\'/g, "\\\'");
+					idc.uid = result[0].u_user;
+					return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = '" + idc.uid + "', rt_title = '" + tempstring1 + "', rt_text = '" + tempstring0 + "', rt_averageRating = '" + input.user[counter].average + "', rt_pricingRating = '" + input.user[counter].price + "', rt_ambienteRating = '" + input.user[counter].ambience + "', rt_serviceRating = '" + input.user[counter].service + "', rt_foodRating = '" + input.user[counter].food + "', rt_date = '" + input.user[counter].date + "'", function(err, result)
+						{
+							if(err) throw err;
+							counter++;
+							return nextUser(input, counter, idc, res, connection);
+						});
 				}
 			});
-		
-
-		
-		connection.query("INSERT INTO rating SET rt_r_ID = '" + rid + "', SET rt_user = '" + uid + "', SET rt_title = '" + Data.user[i].title + "', SET rt_text = '" + Data.user[i].text + "', SET rt_averageRating = '" + Data.user[i].average + "', SET rt_pricingRating = '" + Data.user[i].price + "', SET rt_ambienteRating = '" + Data.user[i].ambience + "', SET rt_serviceRating = '" + Data.user[i].service + "', SET rt_foodRating rt_date = '" + Data.user[i].food + "'", function(err, result)
-		{
-			if(err) throw err;
-			allResults.push(result);
-		});
-		
 	}
-
-	connection.end();
-return res(rid);
+	else
+	{
+		connection.end();
+		return res(idc.rid);
+	}
 };
 
-exports.test = function(input, res)
-{
-	var connection = this.connect();
-//	connection.query("SELECT u_ID FROM user WHERE u_user = '" + input.name + "'", function(err, result)
-//		{
-//			if(err) throw err;
-//			connection.end();
-//			return res(result);
-//		});
-	connection.query("DELETE FROM rawresults ORDER BY res_ID ASC LIMIT 1", function(err, result)
-		{
-			if(err) throw err;
-			connection.end();
-			return res(result);
-		});
-};
+	
+	
 
 /*
 connection.query("", function(err)
