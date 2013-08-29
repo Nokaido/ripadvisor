@@ -296,8 +296,11 @@ exports.startSave = function(Data, res)
 	idc.uid;
 	idc.rtid;
 	var Data = Data;
-	if(Data.site === "1")
+	if(Data.site == 1)
 	{
+		Data.restaurant[0] = Data.restaurant[0].replace(/\'/g, "\\\'");
+		Data.restaurant[2] = Data.restaurant[2].replace(/\'/g, "\\\'");
+		Data.restaurant[5] = Data.restaurant[5].replace(/\'/g, "\\\'");
 		return connection.query("INSERT INTO restaurant SET r_name = '" + Data.restaurant[0] + "', r_adress = '" + Data.restaurant[1] + "', r_ratingCount = '" + Data.restaurant[2] + "', r_foodType = '" + Data.restaurant[3] + "', r_averageRating = '" + Data.restaurant[4] + "', r_occasionType = '" + Data.restaurant[5] + "', r_foodRating = '" + Data.restaurant[6] + "', r_serviceRating = '" + Data.restaurant[7] + "', r_valueRating = '" + Data.restaurant[8] + "', r_atmosphereRating = '" + Data.restaurant[9] + "', r_excellentRatingCount = '" + Data.restaurant[10] + "', r_verygoodRatingCount = '" + Data.restaurant[11] + "', r_averageRatingCount = '" + Data.restaurant[12] + "', r_poorRatingCount = '" + Data.restaurant[13] + "', r_terribleRatingCount = '" + Data.restaurant[14] + "', r_gpsLatitude = '" + Data.restaurant[15] + "', r_gpsLongitude = '" + Data.restaurant[16] + "'", function(err, result)
 		{
 			if(err) throw err;
@@ -308,7 +311,7 @@ exports.startSave = function(Data, res)
 	{
 		return nextUser(Data, 0, idc, res, connection);
 	}
-}
+};
 
 
 nextUser = function(input, counter, idc, res, connection)

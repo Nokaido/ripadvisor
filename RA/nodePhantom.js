@@ -83,7 +83,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 							Data = result;
 							return DB.deleteFirstRawResult(function(res)
 									{
-									if(res.affectedRows === 0)
+									if(res.affectedRows == 0)
 									{
 										result.url = 'end';
 										return nextRating(ph, result);
@@ -122,7 +122,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 							log("opened site : " + Data.url + " " + status);
 							page.onLoadFinished = function()
 									{
-										log('ready!');
+										log('loading...');
 									};
 
 							page.injectJs('./jquery-1.10.2.js', function()
@@ -177,30 +177,28 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 													cc.restaurant = new Array();
 													cc.user = new Array();
 													cc.idArray = new Array();
-												 	cc.site =  $('.paging.pageDisplay').text();
-													cc.count = '0';
+												 	cc.site = ($('.paging.pageDisplay').text() === '') ? (0) : parseInt($('.paging.pageDisplay').text());
+													cc.count = 0;
+													cc.newUrl = 'empty';
+													
 													
  													var temp = new Array();
- 													
- 													if(cc.site === '')
- 													{
- 														cc.site = 1;
- 													}
 													
  													$('.paging.taLnk').each(function(){temp.push($(this).text());});
+ 													
  													if(temp.length > 0)
  													{
- 														cc.count = temp[temp.length -1];
+ 														cc.count = (cc.site > parseInt(temp[temp.length -1])) ? (cc.site) : parseInt(temp[temp.length -1]);
  													}
  													else
  													{
- 														cc.count = ''+1;
+ 														cc.count = 1;
  													}
  													temp = new Array();
  													
  													$('.paging.taLnk').each(function(){temp.push($(this).attr('href'));});
  													
- 													if( cc.count === cc.site)
+ 													if( cc.count == cc.site || cc.site == 0)
  													{
  														cc.newUrl = "next";
  													}
@@ -208,9 +206,18 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													{
  														cc.newUrl = "http://www.tripadvisor.com" + temp[2];
  													}
- 													else if($('.paging.pageDisplay').text() === '1')
+ 													else if(cc.site != 0 && (cc.site + 1) == cc.count && cc.count != 3)
  													{
- 														cc.count  = $('.paging.taLnk:last').text();
+ 														cc.newUrl = "http://www.tripadvisor.com" + temp[2];
+ 													}
+ 													else if(cc.count == 3)
+ 													{
+ 														cc.newUrl = "http://www.tripadvisor.com" + temp[1];
+ 													}
+ 													
+ 													if(cc.site == 1)
+ 													{
+ 														cc.count  = parseInt($('.paging.taLnk:last').text());
  														cc.newUrl = "http://www.tripadvisor.com" + temp[0];
  														
  														cc.restaurant.push(($('#HEADING').text()).slice(2, ($('#HEADING').text()).length-1));//Name
@@ -232,11 +239,11 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  														cc.restaurant.push("null");//GPS Latitude
  														//length 17
  													}
- 													else if($('.paging.pageDisplay').text() === '2')
+ 													else if(cc.site == 2 && cc.count != 2)
  													{
  														cc.newUrl = "http://www.tripadvisor.com" + temp[1];
  													}
- 													else if($('.paging.pageDisplay').text() === '')
+ 													else if(cc.site == 0)
  													{
  														cc.restaurant.push(($('#HEADING').text()).slice(2, ($('#HEADING').text()).length-2));//Name
  														cc.restaurant.push($('.street-address').text() + ", " + $('.locality').text());//Adresse
@@ -270,9 +277,9 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 
  														// Ratings
  														
- 														if(($(temp).find('.sprite-ratings')).length > 1)
+ 														if($(temp).find('.sprite-ratings').length > 2)
  														{
- 															tempObject.name = (($(temp).find('.mo span:eq(1)').text()));
+ 															tempObject.name = (($(temp).find('.mo span:eq(1)').text()) === '' ) ?  ('Facebook_User_Bastelschrank') : ($(temp).find('.mo span:eq(1)').text());
  															// Title
  															tempObject.title = (($(temp).find('.quote>a:eq(1)').text()).slice(1, ($(temp).find('.quote>a:eq(1)').text()).length - 1));
  															// Text
@@ -282,20 +289,48 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  															var tempArray = new Array();
  															$(temp).find('.sprite-ratings').each(function(){tempArray.push($(this).attr('alt'));});
  															
+ 															var price = new Object();
+ 															var ambience = new Object();
+ 															var service = new Object();
+ 															var food = new Object();
+ 															var possition = 0;
+
+ 															
+ 															$(temp).find('.recommend-answer').each(function()
+ 																{
+ 																	switch($(this).text().slice(4))
+ 																	{
+ 																	case 'Value': price.b = true; price.c = possition + 2; possition++;
+ 																	break;
+ 																	case 'Atmosphere': ambience.b = true; ambience.c = possition + 2; possition++;
+ 																	break;
+ 																	case 'Service': service.b = true; service.c = possition + 2; possition++;
+ 																	break;
+ 																	case 'Food': food.b = true; food.c = possition + 2; possition++;
+ 																	break;
+ 																	}
+ 																});
+ 															
+ 															
+ 															tempObject.price = (!price.b) ? '-1' : tempArray[price.c].slice(0, 1);
+ 															tempObject.ambience = (!ambience.b) ? '-1' : tempArray[ambience.c].slice(0, 1);
+ 															tempObject.service = (!service.b) ? '-1' : tempArray[service.c].slice(0, 1);
+ 															tempObject.food = (!food.b) ? '-1' : tempArray[food.c].slice(0, 1);
+
+ 															
  															tempObject.average = tempArray[1].slice(0, 1);
- 															tempObject.price = tempArray[2].slice(0, 1);
- 															tempObject.ambience = tempArray[3].slice(0, 1);
- 															tempObject.service = tempArray[4].slice(0, 1);
- 															tempObject.food = tempArray[5].slice(0, 1);
+ 															
+ 															
+ 															
+ 															
  														}else
  														{
  															
- 															
- 															tempObject.name = (($(temp).find('.mo span').text()));
+ 															tempObject.name = (($(temp).find('.mo span:eq(0)').text()) === '' ) ?  ('Facebook_User_Bastelschrank') : ($(temp).find('.mo span:eq(0)').text());
  															// Title
- 															tempObject.title = (($(temp).find('.quote>a').text()).slice(1, ($(temp).find('.quote>a').text()).length - 1));
+ 															tempObject.title = (($(temp).find('.quote>a:eq(0)').text()).slice(1, ($(temp).find('.quote>a:eq(0)').text()).length - 1));
  															// Text
- 															tempObject.text = (($(temp).find('.entry>p').text()).slice(1, ($(temp).find('.entry>p').text()).length - 1));
+ 															tempObject.text = (($(temp).find('.entry>p:eq(0)').text()).slice(1, ($(temp).find('.entry>p:eq(0)').text()).length - 1));
  															
  															tempObject.date = ($(temp).find('.ratingDate>span').text() === "NEW") ? (($(temp).find('.ratingDate').text()).slice(9, ($(temp).find('.ratingDate').text()).length - 5)) : (($(temp).find('.ratingDate:first').text()).slice(9, ($(temp).find('.ratingDate:first').text()).length - 1));
 
@@ -307,13 +342,19 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  															tempObject.service = "-1";
  															tempObject.food = "-1";
  														}
+ 														
  														cc.user.push(tempObject);
  													}
  													
  													result.push(cc.newUrl);
  													result.push(cc.count);
  													result.push(cc.site);
- 													result.push(cc.restaurant);
+ 													if(cc.site == 1 || cc.site == 0)
+ 													{
+ 														result.push(cc.restaurant);
+ 														
+ 													}
+ 													
  													result.push(cc.user);/* */
 
  													return cc;
@@ -329,7 +370,14 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 // 													log(result);
 // 													log('result');
  													page.close();
+ 													if(result === null)
+ 													{
+ 														log('scraping failed!');
+ 														//TODO save url;
+ 														return ph.exit();
+ 													}
  													
+
  													if(status === 'success' && !err)
  													{
  														log('Site ' + result.site + ' of ' + result.count + ' of this page scraped!');
@@ -339,13 +387,17 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  														log('Scraping failed try again...');
  													}
  													Data = new Object();
+ 													
  													Data.status = status;
  													Data.err = err;
  													Data.restaurantID = restaurantID;
  													Data.url = result.newUrl;
  													Data.count = result.count;
  													Data.site = result.site;
- 													Data.restaurant = result.restaurant;
+ 													if(result.site === 0 || result.site == 1)
+ 													{
+ 														Data.restaurant = result.restaurant;
+ 													}
  													Data.user = result.user;
  													//log(Data);
  													
@@ -376,7 +428,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  			} else 
  			{
  				log(Data);
- 				return log("Page " + Data.site + " of " + Data.count + " loadet, scraped and put into Database: '" + Data.url);
+ 				return log("Page " + Data.site + " of " + Data.count + " loadet, scraped and put into Database. Next Page: '" + Data.url);
  			}
  			
  		}), (function(ph)
