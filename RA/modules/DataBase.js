@@ -296,12 +296,15 @@ exports.startSave = function(Data, res)
 	idc.uid;
 	idc.rtid;
 	var Data = Data;
-	if(Data.site == 1)
+	if(Data.site == 1 || Data.site == 0)
 	{
-		Data.restaurant[0] = Data.restaurant[0].replace(/\'/g, "\\\'");
-		Data.restaurant[2] = Data.restaurant[2].replace(/\'/g, "\\\'");
-		Data.restaurant[5] = Data.restaurant[5].replace(/\'/g, "\\\'");
-		return connection.query("INSERT INTO restaurant SET r_name = '" + Data.restaurant[0] + "', r_adress = '" + Data.restaurant[1] + "', r_ratingCount = '" + Data.restaurant[2] + "', r_foodType = '" + Data.restaurant[3] + "', r_averageRating = '" + Data.restaurant[4] + "', r_occasionType = '" + Data.restaurant[5] + "', r_foodRating = '" + Data.restaurant[6] + "', r_serviceRating = '" + Data.restaurant[7] + "', r_valueRating = '" + Data.restaurant[8] + "', r_atmosphereRating = '" + Data.restaurant[9] + "', r_excellentRatingCount = '" + Data.restaurant[10] + "', r_verygoodRatingCount = '" + Data.restaurant[11] + "', r_averageRatingCount = '" + Data.restaurant[12] + "', r_poorRatingCount = '" + Data.restaurant[13] + "', r_terribleRatingCount = '" + Data.restaurant[14] + "', r_gpsLatitude = '" + Data.restaurant[15] + "', r_gpsLongitude = '" + Data.restaurant[16] + "'", function(err, result)
+//		Data.restaurant[0] = Data.restaurant[0].replace(/\'/g, "\\\'");
+//		Data.restaurant[2] = Data.restaurant[2].replace(/\'/g, "\\\'");
+//		Data.restaurant[5] = Data.restaurant[5].replace(/\'/g, "\\\'");
+		Data.restaurant[0] = connection.escape(Data.restaurant[0]);
+		Data.restaurant[2] = connection.escape(Data.restaurant[2]);
+		Data.restaurant[5] = connection.escape(Data.restaurant[5]);
+		return connection.query("INSERT INTO restaurant SET r_name = " + Data.restaurant[0] + ", r_adress = '" + Data.restaurant[1] + "', r_ratingCount = " + Data.restaurant[2] + ", r_foodType = '" + Data.restaurant[3] + "', r_averageRating = '" + Data.restaurant[4] + "', r_occasionType = " + Data.restaurant[5] + ", r_foodRating = '" + Data.restaurant[6] + "', r_serviceRating = '" + Data.restaurant[7] + "', r_valueRating = '" + Data.restaurant[8] + "', r_atmosphereRating = '" + Data.restaurant[9] + "', r_excellentRatingCount = '" + Data.restaurant[10] + "', r_verygoodRatingCount = '" + Data.restaurant[11] + "', r_averageRatingCount = '" + Data.restaurant[12] + "', r_poorRatingCount = '" + Data.restaurant[13] + "', r_terribleRatingCount = '" + Data.restaurant[14] + "', r_gpsLatitude = '" + Data.restaurant[15] + "', r_gpsLongitude = '" + Data.restaurant[16] + "'", function(err, result)
 		{
 			if(err) throw err;
 			idc.rid = result.insertId;
@@ -318,19 +321,23 @@ nextUser = function(input, counter, idc, res, connection)
 {	
 	if(counter !== input.user.length)
 	{
-		return connection.query("SELECT u_user FROM user WHERE u_user = '" + input.user[counter].name + "'", function(err, result)
+		return connection.query("SELECT u_user FROM user WHERE u_user = " + connection.escape(input.user[counter].name), function(err, result)
 			{
 				if(err) throw err;
 				if(result.length < 1)
 				{
 
-					return connection.query("INSERT INTO user SET u_user = '" + input.user[counter].name + "'", function(err, result)
+					return connection.query("INSERT INTO user SET u_user = " + connection.escape(input.user[counter].name), function(err, result)
 					{
 						if(err) throw err;
 						idc.uid = input.user[counter].name;
-						var tempstring0 = input.user[counter].text.replace(/\'/g, "\\\'");
-						var tempstring1 = input.user[counter].title.replace(/\'/g, "\\\'");
-						return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = '" + idc.uid + "', rt_title = '" + tempstring1 + "', rt_text = '" + tempstring0 + "', rt_averageRating = '" + input.user[counter].average + "', rt_pricingRating = '" + input.user[counter].price + "', rt_ambienteRating = '" + input.user[counter].ambience + "', rt_serviceRating = '" + input.user[counter].service + "', rt_foodRating = '" + input.user[counter].food + "', rt_date = '" + input.user[counter].date + "'", function(err, result)
+						var tempstring3 = input.user[counter].date.replace(/NEW/g, "");
+//						var tempstring1 = input.user[counter].title.replace(/\'/g, "\\\'");
+//						var tempstring2 = idc.uid.replace(/\'/g, "\\\'");
+						var tempstring0 = connection.escape(input.user[counter].text);
+						var tempstring1 = connection.escape(input.user[counter].title);
+						var tempstring2 = connection.escape(idc.uid);
+						return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = " + tempstring2 + ", rt_title = " + tempstring1 + ", rt_text = " + tempstring0 + ", rt_averageRating = '" + input.user[counter].average + "', rt_pricingRating = '" + input.user[counter].price + "', rt_ambienteRating = '" + input.user[counter].ambience + "', rt_serviceRating = '" + input.user[counter].service + "', rt_foodRating = '" + input.user[counter].food + "', rt_date = '" + tempstring3 + "'", function(err, result)
 							{
 								if(err) throw err;
 								counter++;
@@ -340,10 +347,16 @@ nextUser = function(input, counter, idc, res, connection)
 				}
 				else
 				{
-					var tempstring0 = input.user[counter].text.replace(/\'/g, "\\\'");
-					var tempstring1 = input.user[counter].title.replace(/\'/g, "\\\'");
 					idc.uid = result[0].u_user;
-					return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = '" + idc.uid + "', rt_title = '" + tempstring1 + "', rt_text = '" + tempstring0 + "', rt_averageRating = '" + input.user[counter].average + "', rt_pricingRating = '" + input.user[counter].price + "', rt_ambienteRating = '" + input.user[counter].ambience + "', rt_serviceRating = '" + input.user[counter].service + "', rt_foodRating = '" + input.user[counter].food + "', rt_date = '" + input.user[counter].date + "'", function(err, result)
+//					var tempstring0 = input.user[counter].text.replace(/\'/g, "\\\'");
+//					var tempstring1 = input.user[counter].title.replace(/\'/g, "\\\'");
+//					var tempstring2 = idc.uid.replace(/\'/g, "\\\'");
+					var tempstring0 = connection.escape(input.user[counter].text);
+					var tempstring1 = connection.escape(input.user[counter].title);
+					var tempstring2 = connection.escape(idc.uid);
+					var tempstring3 = input.user[counter].date.replace(/NEW/g, "");
+					
+					return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = " + tempstring2 + ", rt_title = " + tempstring1 + ", rt_text = " + tempstring0 + ", rt_averageRating = '" + input.user[counter].average + "', rt_pricingRating = '" + input.user[counter].price + "', rt_ambienteRating = '" + input.user[counter].ambience + "', rt_serviceRating = '" + input.user[counter].service + "', rt_foodRating = '" + input.user[counter].food + "', rt_date = '" + tempstring3 + "'", function(err, result)
 						{
 							if(err) throw err;
 							counter++;

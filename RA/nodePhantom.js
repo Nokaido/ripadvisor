@@ -6,6 +6,7 @@
  var Data = new Object();
  var next = false;
  var restaurantID;
+ var failCounter = 0;
 
 
  
@@ -155,7 +156,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 												page.evaluate(function()
 														{
 														$('.moreLink:first').click();
-														var temp = 'second click'
+														var temp = 'second click';
 														return temp;
 														}, function(err, result)
 														{
@@ -189,10 +190,16 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													if(temp.length > 0)
  													{
  														cc.count = (cc.site > parseInt(temp[temp.length -1])) ? (cc.site) : parseInt(temp[temp.length -1]);
+ 														cc.count = (temp[temp.length -1] === undefined) ? (cc.site) : cc.count;
+
  													}
  													else
  													{
  														cc.count = 1;
+ 													}
+													if(cc.count === undefined || cc.count === "undefined" || cc.count === null)
+ 													{
+ 														cc.count = cc.site;
  													}
  													temp = new Array();
  													
@@ -204,21 +211,20 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													}
  													else if(temp.length > 3)
  													{
- 														cc.newUrl = "http://www.tripadvisor.com" + temp[2];
+ 														cc.newUrl = (temp[2] === undefined) ? (null) : ("http://www.tripadvisor.com" + temp[2]);
  													}
  													else if(cc.site != 0 && (cc.site + 1) == cc.count && cc.count != 3)
  													{
- 														cc.newUrl = "http://www.tripadvisor.com" + temp[2];
+ 														cc.newUrl =  (temp[2] === undefined) ? (null) : ("http://www.tripadvisor.com" + temp[2]);
  													}
  													else if(cc.count == 3)
  													{
- 														cc.newUrl = "http://www.tripadvisor.com" + temp[1];
+ 														cc.newUrl =  (temp[1] === undefined) ? (null) : ("http://www.tripadvisor.com" + temp[1]);
  													}
  													
  													if(cc.site == 1)
  													{
- 														cc.count  = parseInt($('.paging.taLnk:last').text());
- 														cc.newUrl = "http://www.tripadvisor.com" + temp[0];
+ 														cc.newUrl =  (temp[0] === undefined) ? (null) : ("http://www.tripadvisor.com" + temp[0]);
  														
  														cc.restaurant.push(($('#HEADING').text()).slice(2, ($('#HEADING').text()).length-1));//Name
  														cc.restaurant.push($('.street-address').text() + ", " + $('.locality').text());//Adress
@@ -245,7 +251,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													}
  													else if(cc.site == 0)
  													{
- 														cc.restaurant.push(($('#HEADING').text()).slice(2, ($('#HEADING').text()).length-2));//Name
+ 														cc.restaurant.push(($('#HEADING').text()).slice(2, ($('#HEADING').text()).length-1));//Name
  														cc.restaurant.push($('.street-address').text() + ", " + $('.locality').text());//Adresse
  														cc.restaurant.push(0);
  														cc.restaurant.push("");
@@ -264,7 +270,10 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  														cc.restaurant.push(0);
  														
  													}
- 													 
+ 													if( cc.count == cc.site || cc.site == 0)
+ 													{
+ 														cc.newUrl = "next";
+ 													}
  													$('.reviewSelector').each(function(){cc.idArray.push($(this).attr('id'));});
  													
  													var temp;
@@ -385,6 +394,11 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													else
  													{
  														log('Scraping failed try again...');
+ 														failCounter++;
+ 														if(failCounter == 5)
+ 														{
+ 															return ph.exit();
+ 														}
  													}
  													Data = new Object();
  													
@@ -403,9 +417,9 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													
  													return saveRating(ph, Data);
  												});
- 										}, 6000);
+ 										}, 5000);
  								});
-							}, 10000);
+							}, 9000);
  						});
  				});
  		}
