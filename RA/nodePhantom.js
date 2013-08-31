@@ -376,7 +376,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													
  													log(err);
 // 													log('result');
-// 													log(result);
+ 													log(result);
 // 													log('result');
  													page.close();
  													if(result === null)
