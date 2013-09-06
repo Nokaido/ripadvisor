@@ -232,17 +232,26 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  														cc.restaurant.push(($('.detail:first').text()).slice(11, ($('.detail:first').text()).length - 1));//FoodType
  														cc.restaurant.push(($('.sprite-ratings').attr('alt')).slice(0, ($('.sprite-ratings').attr('alt')).length - 11));//AverageRating
  														cc.restaurant.push(($('.detail:eq(1)').text()).slice(17, ($('.detail:eq(1)').text()).length - 1));//OccationType
- 														cc.restaurant.push(($('.fill:eq(5)').attr('style')).slice(6, ($('.fill:eq(5)').attr('style')).length - 3));//FoodRating
- 														cc.restaurant.push(($('.fill:eq(6)').attr('style')).slice(6, ($('.fill:eq(6)').attr('style')).length - 3));//ServiceRating
- 														cc.restaurant.push(($('.fill:eq(7)').attr('style')).slice(6, ($('.fill:eq(7)').attr('style')).length - 3));//ValueRating
- 														cc.restaurant.push(($('.fill:eq(8)').attr('style')).slice(6, ($('.fill:eq(8)').attr('style')).length - 3));//AtmosphereRating
- 														cc.restaurant.push($('.compositeCount:eq(0)').text());//ExcelentRatingCount
- 														cc.restaurant.push($('.compositeCount:eq(1)').text());//VeryGoodRatingCount
- 														cc.restaurant.push($('.compositeCount:eq(2)').text());//AverageRatingCount
- 														cc.restaurant.push($('.compositeCount:eq(3)').text());//PoorRatingCount
- 														cc.restaurant.push($('.compositeCount:eq(4)').text());//TerribleRatingCount
+ 														if($('.fill:eq(5)').attr('style') != undefined) {cc.restaurant.push(($('.fill:eq(5)').attr('style')).slice(6, ($('.fill:eq(5)').attr('style')).length - 3));}//FoodRating
+ 														else{cc.restaurant.push("-1");}
+ 														if($('.fill:eq(6)').attr('style') != undefined) {cc.restaurant.push(($('.fill:eq(6)').attr('style')).slice(6, ($('.fill:eq(6)').attr('style')).length - 3));}//ServiceRating
+ 														else{cc.restaurant.push("-1");}	
+ 														if($('.fill:eq(7)').attr('style') != undefined) {cc.restaurant.push(($('.fill:eq(7)').attr('style')).slice(6, ($('.fill:eq(7)').attr('style')).length - 3));}//ValueRating
+ 														else{cc.restaurant.push("-1");}	
+ 														if($('.fill:eq(8)').attr('style') != undefined) {cc.restaurant.push(($('.fill:eq(8)').attr('style')).slice(6, ($('.fill:eq(8)').attr('style')).length - 3));}//AtmosphereRating
+ 														else{cc.restaurant.push("-1");}
+ 														if($('.compositeCount:eq(0)').text() != ""){cc.restaurant.push($('.compositeCount:eq(0)').text());}//ExcelentRatingCount
+ 														else{cc.restaurant.push("-1");}
+ 														if($('.compositeCount:eq(1)').text() != ""){cc.restaurant.push($('.compositeCount:eq(1)').text());}//VeryGoodRatingCount
+ 														else{cc.restaurant.push("-1");}
+ 														if($('.compositeCount:eq(2)').text() != ""){cc.restaurant.push($('.compositeCount:eq(2)').text());}//AverageRatingCount
+ 														else{cc.restaurant.push("-1");}
+ 														if($('.compositeCount:eq(3)').text() != ""){cc.restaurant.push($('.compositeCount:eq(3)').text());}//PoorRatingCount
+ 														else{cc.restaurant.push("-1");}
+ 														if($('.compositeCount:eq(4)').text() != ""){cc.restaurant.push($('.compositeCount:eq(4)').text());}//TerribleRatingCount
+ 														else{cc.restaurant.push("-1");}
  														cc.restaurant.push("null");//GPS Longitude
- 														cc.restaurant.push("null");//GPS Latitude
+ 														cc.restaurant.push("null");//GPS Latitude/* */
  														//length 17
  													}
  													else if(cc.site == 2 && cc.count != 2)
@@ -274,6 +283,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													{
  														cc.newUrl = "next";
  													}
+ 													 
  													$('.reviewSelector').each(function(){cc.idArray.push($(this).attr('id'));});
  													
  													var temp;
@@ -364,7 +374,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  														
  													}
  													
- 													result.push(cc.user);/* */
+ 													result.push(cc.user);
 
  													return cc;
  												}, function(err, result)
@@ -376,7 +386,7 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													
  													log(err);
 // 													log('result');
- 													log(result);
+ 													//log(result);
 // 													log('result');
  													page.close();
  													if(result === null)

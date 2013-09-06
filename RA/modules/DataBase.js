@@ -7,7 +7,7 @@ var DBuser = conData.user;
 var DBpassword = conData.password;
 var DBdatabase = conData.database;
 var id = -1;
-var nextUser;
+var nextUser, nextRestaurant;
 var getFirstRawResult;
 
 exports.conData = conData;
@@ -170,6 +170,42 @@ exports.deleteFirstRawResult = function(res)
 			return res(result);
 		});
 };
+
+exports.getNextRestaurants = function(ph, Data, res)
+{
+	var connection = this.connect();
+	connection.query("SELECT r_ID, r_adress FROM restaurant WHERE r_ID > " + connection.escape(Data.restaurantCount) + " LIMIT 25", function(err, result)
+		{
+			if(err) throw err;
+			connection.end();
+			Data.restaurant = result;
+			return res(ph, Data);
+		});
+};
+
+exports.setCoords = function(Data, res)
+{
+	var connection = this.connect();
+	return nextRestaurant(Data, 0, connection, res);
+};
+
+nextRestaurant = function(Data, counter, connection, res)
+{
+	if(counter !== Data.restaurant.length)
+	{
+		return connection.query("UPDATE restaurant SET r_gpsLatitude = " + connection.escape(Data.restaurant[counter].latitude) + ", r_gpsLongitude = " + connection.escape(Data.restaurant[counter].longitude) + " WHERE r_ID = " + connection.escape(Data.restaurant[counter].r_ID), function(err, result)
+			{
+				if(err) throw err;
+				counter++;
+				return nextRestaurant(Data, counter, connection, res);
+			});
+	}
+	else
+	{
+		connection.end();
+		return res(Data);
+	}
+}
 	
 
 exports.startSave = function(Data, res)
