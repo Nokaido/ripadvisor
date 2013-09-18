@@ -22,12 +22,11 @@ exports.connect = function()
 				password : DBpassword,
 				database : DBdatabase
 			});
-	}
+	};
 
 exports.startDB = function() 
 	{
-		var connection = this.connect();
-		
+		var connection = this.connect();	
 		
 		connection.query("CREATE DATABASE IF NOT EXISTS ripadvisor", function(err, result) 
 			{

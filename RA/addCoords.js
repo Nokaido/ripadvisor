@@ -61,7 +61,10 @@ addCoords = function(callbacInfo, callbackEnd)
 					{
 						
 						log(Data);
-						
+						if(Data.restaurant.length === 0)
+						{
+							callbackEnd(ph);
+						}
 						Data.restaurantCount = Data.restaurant[Data.restaurant.length-1].r_ID;
 						fs.writeFile(outputFile, JSON.stringify({restaurantCount: Data.restaurantCount}, null, 2), function(err)
 							{
