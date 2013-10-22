@@ -245,11 +245,11 @@ nextUser = function(input, counter, idc, res, connection)
 				if(result.length < 1)
 				{
 
-					return connection.query("INSERT INTO user SET u_user = " + connection.escape(input.user[counter].name), function(err, result)
+					return connection.query("INSERT INTO user SET u_user = " + connection.escape(input.user[counter].user.name) + ", u_ratingCount = " + connection.escape(input.user[counter].user.ratingCount) + ", u_contributionsCount = " + connection.escape(input.user[counter].user.contributionsCount) + ", u_adress = " + connection.escape(input.user[counter].user.adress) + ", u_helpfullRatingCount = " + connection.escape(input.user[counter].user.helpfullCount) + ", u_excellentRatingCount = " + connection.escape(input.user[counter].user.excellentCount) + ", u_poorRatingCount = " + connection.escape(input.user[counter].user.poorCount) + ", u_terribleRatingCount = " + connection.escape(input.user[counter].user.terribleCount) + ", u_verygoodRatingCount = " + connection.escape(input.user[counter].user.verygoodCount) + ", u_citiesCount = " + connection.escape(input.user[counter].user.citiesCount) + ", u_averageRatingCount = " + connection.escape(input.user[counter].user.averageCount) + ", u_origin = " + connection.escape(input.user[counter].user.origin), function(err, result)
 					{
 						if(err) throw err;
 						idc.uid = input.user[counter].name;
-						var tempstring3 = input.user[counter].date.replace(/NEW/g, "");
+						var tempstring3 = input.user[counter].date.replace(/\nNEW/g, "");
 						var tempstring0 = connection.escape(input.user[counter].text);
 						var tempstring1 = connection.escape(input.user[counter].title);
 						var tempstring2 = connection.escape(idc.uid);
@@ -267,7 +267,7 @@ nextUser = function(input, counter, idc, res, connection)
 					var tempstring0 = connection.escape(input.user[counter].text);
 					var tempstring1 = connection.escape(input.user[counter].title);
 					var tempstring2 = connection.escape(idc.uid);
-					var tempstring3 = input.user[counter].date.replace(/NEW/g, "");
+					var tempstring3 = input.user[counter].date.replace(/\nNEW/g, "");
 					
 					return connection.query("INSERT INTO rating SET rt_r_ID = '" + idc.rid + "', rt_user = " + tempstring2 + ", rt_title = " + tempstring1 + ", rt_text = " + tempstring0 + ", rt_averageRating = '" + input.user[counter].average + "', rt_pricingRating = '" + input.user[counter].price + "', rt_ambienteRating = '" + input.user[counter].ambience + "', rt_serviceRating = '" + input.user[counter].service + "', rt_foodRating = '" + input.user[counter].food + "', rt_date = '" + tempstring3 + "'", function(err, result)
 						{

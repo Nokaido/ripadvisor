@@ -1,7 +1,12 @@
+/**
+ * This part of the ripadvisor dataextractor extracts the userinformation including the Rating texts, user rating behavior.
+ * Bevor this part the rawresults must be created by the start.js
+ */
+ 
 
  var DB = require('./modules/DataBase');
  var phantom = require('node-phantom');
- var ratingFarmer, ratingStep, nextRating, phantomInit, site, dataGetter, clickMore, log, saveRating;
+ var ratingFarmer, ratingStep, nextRating, phantomInit, site, dataGetter, clickMore, log, saveRating, nextUser;
  var first = true;
  var Data = new Object();
  var next = false;
@@ -182,6 +187,8 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 													cc.count = 0;
 													cc.newUrl = 'empty';
 													
+													var toa = new Array();
+													
 													
  													var temp = new Array();
 													
@@ -229,9 +236,9 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  														cc.restaurant.push(($('#HEADING').text()).slice(2, ($('#HEADING').text()).length-1));//Name
  														cc.restaurant.push($('.street-address').text() + ", " + $('.locality').text());//Adress
  														cc.restaurant.push(($('.more').text()).slice(0, ($('.more').text()).length - 8));//RatingCount
- 														cc.restaurant.push(($('.detail:first').text()).slice(11, ($('.detail:first').text()).length - 1));//FoodType
+ 														cc.restaurant.push(($('.detail:first').text()).slice(1, ($('.detail:first').text()).length - 1));//FoodType
  														cc.restaurant.push(($('.sprite-ratings').attr('alt')).slice(0, ($('.sprite-ratings').attr('alt')).length - 11));//AverageRating
- 														cc.restaurant.push(($('.detail:eq(1)').text()).slice(17, ($('.detail:eq(1)').text()).length - 1));//OccationType
+ 														cc.restaurant.push(($('.detail:eq(1)').text()).slice(1, ($('.detail:eq(1)').text()).length - 1));//OccationType
  														if($('.fill:eq(5)').attr('style') != undefined) {cc.restaurant.push(($('.fill:eq(5)').attr('style')).slice(6, ($('.fill:eq(5)').attr('style')).length - 3));}//FoodRating
  														else{cc.restaurant.push("-1");}
  														if($('.fill:eq(6)').attr('style') != undefined) {cc.restaurant.push(($('.fill:eq(6)').attr('style')).slice(6, ($('.fill:eq(6)').attr('style')).length - 3));}//ServiceRating
@@ -292,12 +299,16 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													{
  														temp = '#'+ cc.idArray[i];
  														var tempObject = new Object();
+ 														var to = new Object();
  														// Username
 
- 														// Ratings
- 														
+
  														if($(temp).find('.sprite-ratings').length > 2)
  														{
+ 															tempObject.id = cc.idArray[i].slice(7, cc.idArray[i].length);
+ 															
+ 															tempObject.facebook = false;
+ 															//name
  															tempObject.name = (($(temp).find('.mo span:eq(1)').text()) === '' ) ?  ('Facebook_User_Bastelschrank') : ($(temp).find('.mo span:eq(1)').text());
  															// Title
  															tempObject.title = (($(temp).find('.quote>a:eq(1)').text()).slice(1, ($(temp).find('.quote>a:eq(1)').text()).length - 1));
@@ -344,6 +355,9 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  															
  														}else
  														{
+ 															tempObject.facebook = true;
+ 															
+ 															tempObject.id = cc.idArray[i].slice(7, cc.idArray[i].length);
  															
  															tempObject.name = (($(temp).find('.mo span:eq(0)').text()) === '' ) ?  ('Facebook_User_Bastelschrank') : ($(temp).find('.mo span:eq(0)').text());
  															// Title
@@ -361,35 +375,50 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  															tempObject.service = "-1";
  															tempObject.food = "-1";
  														}
- 														
+ 														//cc.user[tempObject.id] = tempObject;
  														cc.user.push(tempObject);
  													}
  													
- 													result.push(cc.newUrl);
- 													result.push(cc.count);
- 													result.push(cc.site);
  													if(cc.site == 1 || cc.site == 0)
  													{
  														result.push(cc.restaurant);
  														
  													}
  													
- 													result.push(cc.user);
-
+ 													//return toa;
  													return cc;
  												}, function(err, result)
  												{
  													page.render('2pic.png', function()
  														{
- 															return log('render 2 done')
+ 															return log('render 2 done');
  														});
- 													
- 													log(err);
+ 													log("***************");
+ 													log(result.user);
+ 													log("+++++++++++++++");
+ 														return nextUser(result, 0, new Array(), page, function(res){
+// 															log("res:###################################");	
+// 															log(res);
+ 														for(var a = 0; a < res.length; a++)
+ 														{
+ 															for(var b=0; b<result.user.length; b++)
+ 															{
+ 																if(result.user[a].id == res[b].id)
+ 																{
+ 																	result.user[a].user = res[b];
+ 																	log("#################");
+ 																	log(res[b]);
+ 																}
+ 															}
+ 														}
+ 														log("result:#####################################");
+ 														log(result);
+ 													/*log(err);*/
 // 													log('result');
  													//log(result);
 // 													log('result');
  													page.close();
- 													if(result === null)
+ 													if(result === null || res === null)
  													{
  														log('scraping failed!');
  														//TODO save url;
@@ -425,7 +454,8 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  													Data.user = result.user;
  													//log(Data);
  													
- 													return saveRating(ph, Data);
+ 													return saveRating(ph, Data); 
+ 														});
  												});
  										}, 5000);
  								});
@@ -442,6 +472,108 @@ ratingFarmer = function(callbackInfo, callbackEnd)
  	log("Init Phantom");
  	return phantomInit();
  };
+
+nextUser = function(Data, counter, toa, page, returnData)
+{
+	if(counter < Data.idArray.length)
+	{
+		
+
+		page.injectJs('./jquery-1.10.2.js', function(){
+			page.evaluate(function(Data, counter){
+				var temp;
+				temp = '#'+ Data.idArray[counter];
+				var id   = $(temp).find('.memberOverlayLink').attr('id');
+				$('#' + id).mouseover();
+
+				return;
+			},function(err, result){
+//					page.render('0' + counter + 'pic.png', function()
+//							{
+//								return log('render '+counter+' done');
+//							});
+					}, Data, counter);
+			setTimeout(function(){
+				page.injectJs('./jquery-1.10.2.js', function(){
+					page.evaluate(function(Data, counter){
+						var temp;
+						var to = new Object();
+						var slot;
+						
+						temp = '#'+ Data.idArray[counter];
+						to.id = Data.idArray[counter].slice(7, Data.idArray[counter].length);
+						
+						var username = $(temp).find('.username').text();
+						username = username.slice(1, username.length-1);
+						
+						if($('#GENERIC_MEMBER_OVERLAY')[0] === undefined && username !== "A TripAdvisor reviewer on Facebook" && ($(temp).find('.mo span:eq(1)').text()) !== '')
+						{
+							to.name = $('.memberOverlay.simple.wrap.container').find('.username>a:eq(0)').text();
+							to.adress = 'http://www.tripadvisor.com' + $('.memberOverlay.simple.wrap.container').find('.username>a').attr('href');
+							to.counter = counter;
+								
+							to.origin = $('.memberOverlay.simple.wrap.container').find('.memberStats').text();
+							to.origin = (to.origin !== undefined) ? (to.origin.slice(1, to.origin.length-1)) : ("");
+							to.ratingCount = $('.memberOverlay.simple.wrap.container').find('.numbersText:eq(0)').text();
+							to.ratingCount = (to.ratingCount !== undefined ) ? (to.ratingCount.slice(1, to.ratingCount.length-1)) : ("");
+							to.excellentCount = $('.memberOverlay.simple.wrap.container').find('.numbersText:eq(1)').text();
+							to.excellentCount = (to.excellentCount !== undefined) ? (to.excellentCount.slice(2, to.excellentCount.length-1)) : ("");
+							to.verygoodCount = $('.memberOverlay.simple.wrap.container').find('.numbersText:eq(2)').text();
+							to.verygoodCount = (to.verygoodCount !== undefined) ? (to.verygoodCount.slice(2, to.verygoodCount.length-1)) : ("");
+							to.averageCount = $('.memberOverlay.simple.wrap.container').find('.numbersText:eq(3)').text();
+							to.averageCount = (to.averageCount !== undefined) ? (to.averageCount.slice(2, to.averageCount.length-1)) : ("");
+							to.poorCount = $('.memberOverlay.simple.wrap.container').find('.numbersText:eq(4)').text();
+							to.poorCount = (to.poorCount !== undefined) ? (to.poorCount.slice(2, to.poorCount.length-1)) : ("");
+							to.terribleCount = $('.memberOverlay.simple.wrap.container').find('.numbersText:eq(5)').text();
+							to.terribleCount = (to.terribleCount !== undefined) ? (to.terribleCount.slice(2, to.terribleCount.length-1)) : ("");
+							to.contributionsCount = $('.boxes.wrap.container').find('.numbers:eq(0)').text();
+							to.helpfullCount = $('.boxes.wrap.container').find('.numbers:eq(1)').text();
+							to.citiesCount = $('.boxes.wrap.container').find('.numbers:eq(2)').text();
+							$('close').click();
+						}else
+						{
+							to.name = 'Facebook_User_Bastelschrank';
+							to.adress = '';
+							to.counter = counter;
+								
+							to.origin = '';
+							to.ratingCount = '';
+							to.excellentCount = '';
+							to.verygoodCount = '';
+							to.averageCount = '';
+							to.poorCount = '';
+							to.terribleCount = '';
+							to.contributionsCount = '';
+							to.helpfullCount = '';
+							to.citiesCount = '';
+							$('close').click();
+						}
+						return to;
+					},function(err, result){
+						
+						log(result);
+						
+						if(result.name !== '')
+						{
+							toa.push(result);
+							counter++;
+						}else
+						{
+							log("Empty User!");
+						}
+						
+						
+						return nextUser(Data, counter, toa, page, returnData);
+					}, Data, counter);
+				});
+			}, 3000);
+		});
+
+	}else
+	{
+		return returnData(toa);
+	}
+} 
 
  ratingFarmer((function(Data, db)
  		{
