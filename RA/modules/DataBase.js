@@ -9,6 +9,7 @@ var DBdatabase = conData.database;
 var id = -1;
 var nextUser, nextRestaurant;
 var getFirstRawResult;
+var syncronizeStep;
 
 exports.conData = conData;
 
@@ -285,9 +286,38 @@ nextUser = function(input, counter, idc, res, connection)
 	}
 };
 
-	
-	
+exports.syncronize = function(res)
+{
+	var connection = this.connect();
+	return syncronizeStep(connection, res)
 
+}
+	
+syncronizeStep = function(connection, res)
+{
+	return connection.query("INSERT INTO sync SET s_ID = " + connection.escape(conData["pcId"]), function(err, result)
+		{
+			if(err)throw err;
+			
+			return connection.query("SELECT res_adress FROM rawresults WHERE res_ID = " + connection.escape(result.insertId), function(error, rawResult)
+					{
+						if(error)throw error;
+						if(rawResult.length == 0)
+						{
+							syncronizeStep(connection, res)
+						}
+						else
+						{
+							connection.end();
+							return res(rawResult[0].res_adress)
+						}
+		
+
+
+					});
+		});
+}
+	
 /*
 connection.query("", function(err)
 	{

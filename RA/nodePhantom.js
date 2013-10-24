@@ -42,11 +42,20 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 					Data.url = "next";
 					Data.siteCount = null;
 					Data.activeSite = null;
-
-					DB.getFirstRawResult(ph, Data, function(ph, Data)
+					
+					DB.syncronize(function(adress)
+						{
+							Data.url = adress;
+							log("xxxxxxxxxx-url-xxxxxxxxxxx");
+							log(adress);
+							log("xxxxxxxxxxxxxxxxxxxxxxxxxx");
+							
+							return nextRating(ph, Data);
+						});
+					/*DB.getFirstRawResult(ph, Data, function(ph, Data)
 							{
 								return nextRating(ph, Data);
-							});
+							});*/
 
 				},{parameters:{'load-images':'no'}});
 
@@ -96,10 +105,19 @@ ratingFarmer = function(callbackInfo, callbackEnd)
 									}
 									else
 									{
-										DB.getFirstRawResult(ph, Data, function(ph, Data)
+										DB.syncronize(function(adress)
+											{
+												Data.url = adress;
+												log("xxxxxxxxxx-url-xxxxxxxxxxx");
+												log(adress);
+												log("xxxxxxxxxxxxxxxxxxxxxxxxxx");
+												
+												return nextRating(ph, Data);
+											});
+										/*DB.getFirstRawResult(ph, Data, function(ph, Data)
 												{
 													return nextRating(ph, Data);
-												});
+												});*/
 									}
 								});
 							}
